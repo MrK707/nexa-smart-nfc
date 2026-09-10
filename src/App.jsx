@@ -2,11 +2,18 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import {
   LayoutDashboard, User, Palette, Link2, Briefcase, BarChart3, Settings as SettingsIcon,
   HelpCircle, LogOut, Bell, ChevronDown, Camera, Copy, ExternalLink, QrCode, Share2,
-  Edit3, Check, X, Plus, Trash2, GripVertical, Eye, EyeOff, Instagram, Linkedin,
-  Facebook, Twitter, Youtube, Phone, Mail, Globe, MapPin, MessageCircle, Menu,
+  Edit3, Check, X, Plus, Trash2, GripVertical, Eye, EyeOff,
+  Phone, Mail, Globe, MapPin, MessageCircle, Menu,
   Loader2, AlertTriangle, ShieldCheck, KeyRound, CheckCircle2, Sparkles, ArrowUpRight,
   ImagePlus, Download, Lock
 } from "lucide-react";
+import {
+  FaInstagram as Instagram,
+  FaLinkedin as Linkedin,
+  FaFacebook as Facebook,
+  FaXTwitter as Twitter,
+  FaYoutube as Youtube
+} from "react-icons/fa6";
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
 } from "recharts";
