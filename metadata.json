@@ -1,0 +1,6 @@
+{
+  "name": "Nexa Creatives Dashboard",
+  "description": "Premium customer dashboard and smart NFC business card platform for Nexa Creatives.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
