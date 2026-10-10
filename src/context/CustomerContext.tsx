@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import type { User } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase';
 import { UserProfile, ActivityItem, NotificationItem, AuthSession, UserRole } from '../types';
 import {
   getStoredProfile,
@@ -7,12 +9,19 @@ import {
   logActivity as recordActivity,
   getStoredNotifications,
   markNotificationsAsRead,
-  getStoredSession,
-  setStoredSession,
   clearStoredSession,
   calculateProfileCompletion,
   ProfileCompletionResult,
 } from '../lib/store';
+
+interface AuthResult {
+  error: string | null;
+}
+
+interface SignUpResult {
+  error: string | null;
+  needsConfirmation: boolean;
+}
 
 interface CustomerContextType {
   profile: UserProfile;
@@ -23,7 +32,10 @@ interface CustomerContextType {
   unreadNotificationCount: number;
   markNotificationsRead: () => void;
   session: AuthSession;
-  login: (email: string, role?: UserRole) => void;
+  authLoading: boolean;
+  login: (email: string, password: string) => Promise<AuthResult>;
+  signUp: (email: string, password: string, fullName?: string) => Promise<SignUpResult>;
+  resetPassword: (email: string) => Promise<AuthResult>;
   logout: () => void;
   completion: ProfileCompletionResult;
   currentRoute: string;
@@ -35,11 +47,30 @@ interface CustomerContextType {
 
 const CustomerContext = createContext<CustomerContextType | undefined>(undefined);
 
+const SIGNED_OUT: AuthSession = { isAuthenticated: false, user: null };
+
+// Convert a Supabase user into the session shape the app already uses.
+// Admin role comes from app_metadata, which users cannot edit themselves.
+const toSession = (user: User | null): AuthSession => {
+  if (!user) return SIGNED_OUT;
+  const role: UserRole = user.app_metadata?.role === 'admin' ? 'admin' : 'customer';
+  return {
+    isAuthenticated: true,
+    user: {
+      id: user.id,
+      email: user.email ?? '',
+      role,
+      name: (user.user_metadata?.full_name as string) || user.email?.split('@')[0] || 'Member',
+    },
+  };
+};
+
 export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [profile, setProfile] = useState<UserProfile>(getStoredProfile);
   const [activities, setActivities] = useState<ActivityItem[]>(getStoredActivities);
   const [notifications, setNotifications] = useState<NotificationItem[]>(getStoredNotifications);
-  const [session, setSession] = useState<AuthSession>(getStoredSession);
+  const [session, setSession] = useState<AuthSession>(SIGNED_OUT);
+  const [authLoading, setAuthLoading] = useState(true);
   const [isShareModalOpen, setShareModalOpen] = useState(false);
 
   // Simple client-side pushState / hash routing listener
@@ -74,8 +105,26 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
-  // Authentication guards
+  // Real authentication: load the saved Supabase session and listen for changes
   useEffect(() => {
+    // remove the old fake demo session if it is still stored in this browser
+    clearStoredSession();
+
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(toSession(data.session?.user ?? null));
+      setAuthLoading(false);
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(toSession(newSession?.user ?? null));
+    });
+
+    return () => listener.subscription.unsubscribe();
+  }, []);
+
+  // Authentication guards (wait until the saved session has been checked)
+  useEffect(() => {
+    if (authLoading) return;
     if (!session.isAuthenticated && currentRoute.startsWith('/dashboard')) {
       navigate('/login');
     } else if (session.isAuthenticated && session.user?.role === 'admin' && currentRoute.startsWith('/dashboard')) {
@@ -87,7 +136,7 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         navigate('/dashboard');
       }
     }
-  }, [session, currentRoute, navigate]);
+  }, [session, authLoading, currentRoute, navigate]);
 
   const updateProfile = useCallback((updates: Partial<UserProfile>) => {
     setProfile(prev => {
@@ -137,34 +186,41 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return calculateProfileCompletion(profile);
   }, [profile]);
 
-  const login = useCallback((email: string, role: UserRole = 'customer') => {
-    const newSession: AuthSession = {
-      isAuthenticated: true,
-      user: {
-        id: role === 'admin' ? 'usr_admin_001' : 'usr_nexa_0921',
-        email,
-        role,
-        name: role === 'admin' ? 'Nexa System Admin' : profile.personal.full_name || 'John Perera',
-      },
-    };
-    setStoredSession(newSession);
-    setSession(newSession);
-    recordCustomActivity('profile_updated', 'Session Authenticated', `Logged in via ${email}`);
+  const login = useCallback(async (email: string, password: string): Promise<AuthResult> => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+    return { error: error ? error.message : null };
+  }, []);
 
-    if (role === 'admin') {
-      navigate('/admin');
-    } else {
-      navigate('/dashboard');
-    }
-  }, [navigate, profile.personal.full_name, recordCustomActivity]);
+  const signUp = useCallback(async (email: string, password: string, fullName?: string): Promise<SignUpResult> => {
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: {
+        data: { full_name: fullName || '' },
+        emailRedirectTo: `${window.location.origin}/login`,
+      },
+    });
+    return {
+      error: error ? error.message : null,
+      needsConfirmation: !error && !data.session,
+    };
+  }, []);
+
+  const resetPassword = useCallback(async (email: string): Promise<AuthResult> => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/login`,
+    });
+    return { error: error ? error.message : null };
+  }, []);
 
   const logout = useCallback(() => {
-    clearStoredSession();
-    setSession({
-      isAuthenticated: false,
-      user: null,
+    supabase.auth.signOut().finally(() => {
+      setSession(SIGNED_OUT);
+      navigate('/login');
     });
-    navigate('/login');
   }, [navigate]);
 
   return (
@@ -178,7 +234,10 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         unreadNotificationCount,
         markNotificationsRead,
         session,
+        authLoading,
         login,
+        signUp,
+        resetPassword,
         logout,
         completion,
         currentRoute,
