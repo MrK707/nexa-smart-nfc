@@ -2,12 +2,15 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useCustomer } from '../context/CustomerContext';
 
 export const LoginPage: React.FC = () => {
-  const { login, session, navigate } = useCustomer();
+  const { login, signUp, resetPassword, session, navigate } = useCustomer();
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const [infoMessage, setInfoMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Refs for the animated robot mascot
@@ -27,26 +30,64 @@ export const LoginPage: React.FC = () => {
     }
   }, [session, navigate]);
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
+
+    setErrorMessage('');
+    setInfoMessage('');
 
     if (!email) {
       setErrorMessage('Please enter your email address');
       return;
     }
+    if (!password) {
+      setErrorMessage('Please enter your password');
+      return;
+    }
+    if (mode === 'signup' && password.length < 8) {
+      setErrorMessage('Password must be at least 8 characters');
+      return;
+    }
 
-    setErrorMessage('');
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      setIsSubmitting(false);
-      if (email.toLowerCase().includes('admin')) {
-        login(email, 'admin');
-      } else {
-        login(email, 'customer');
+    if (mode === 'signin') {
+      const { error } = await login(email, password);
+      if (error) setErrorMessage(error);
+    } else {
+      const { error, needsConfirmation } = await signUp(email, password, fullName.trim());
+      if (error) {
+        setErrorMessage(error);
+      } else if (needsConfirmation) {
+        setInfoMessage('Account created! Please check your email and confirm it, then log in.');
+        setMode('signin');
+        setPassword('');
       }
-    }, 500);
+    }
+
+    setIsSubmitting(false);
+  };
+
+  const handleForgotPassword = async () => {
+    setErrorMessage('');
+    setInfoMessage('');
+    if (!email) {
+      setErrorMessage('Enter your email above first, then tap Forgot password');
+      return;
+    }
+    const { error } = await resetPassword(email);
+    if (error) {
+      setErrorMessage(error);
+    } else {
+      setInfoMessage('Password reset link sent. Please check your email.');
+    }
+  };
+
+  const switchMode = () => {
+    setMode((m) => (m === 'signin' ? 'signup' : 'signin'));
+    setErrorMessage('');
+    setInfoMessage('');
   };
 
   // Robot mascot interactive animation (mirrors the original index.html script)
@@ -449,6 +490,18 @@ export const LoginPage: React.FC = () => {
           text-align:center;
         }
 
+        .info-banner{
+          margin-bottom:16px;
+          padding:10px 14px;
+          border-radius:12px;
+          background:#f0fdf4;
+          border:1px solid #bbf7d0;
+          color:#15803d;
+          font-size:12.5px;
+          font-weight:600;
+          text-align:center;
+        }
+
         form{ display:flex; flex-direction:column; }
 
         .field{
@@ -459,6 +512,7 @@ export const LoginPage: React.FC = () => {
         }
         .field:nth-of-type(1){ animation-delay:.55s; }
         .field:nth-of-type(2){ animation-delay:.62s; }
+        .field:nth-of-type(3){ animation-delay:.66s; }
 
         .field label{
           display:block;
@@ -581,6 +635,24 @@ export const LoginPage: React.FC = () => {
 
         @keyframes spin{ to{ transform: rotate(360deg); } }
 
+        .switch-mode{
+          margin:18px 0 0;
+          text-align:center;
+          font-size:13px;
+          color:var(--text-muted);
+        }
+        .switch-mode button{
+          background:none;
+          border:none;
+          padding:0;
+          margin-left:6px;
+          font-size:13px;
+          font-weight:700;
+          color:var(--text-main);
+          cursor:pointer;
+        }
+        .switch-mode button:hover{ text-decoration:underline; }
+
         @media (max-width: 760px){
           .card{ flex-direction:column; min-height:auto; }
           .left-panel{ padding:32px 20px; min-height:200px; }
@@ -638,12 +710,31 @@ export const LoginPage: React.FC = () => {
             </svg>
           </div>
 
-          <h1 className="title">Welcome back!</h1>
-          <p className="subtitle">Enter your login details</p>
+          <h1 className="title">{mode === 'signin' ? 'Welcome back!' : 'Create your account'}</h1>
+          <p className="subtitle">
+            {mode === 'signin' ? 'Enter your login details' : 'Start building your digital card'}
+          </p>
 
           {errorMessage && <div className="error-banner">{errorMessage}</div>}
+          {infoMessage && <div className="info-banner">{infoMessage}</div>}
 
           <form onSubmit={handleLoginSubmit} noValidate>
+            {mode === 'signup' && (
+              <div className="field">
+                <label htmlFor="login-name-input">Full name</label>
+                <div className="input-wrap">
+                  <input
+                    type="text"
+                    id="login-name-input"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Your name"
+                    autoComplete="name"
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="field">
               <label htmlFor="login-email-input">Email</label>
               <div className="input-wrap">
@@ -668,7 +759,7 @@ export const LoginPage: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  autoComplete="current-password"
+                  autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
                   required
                 />
                 <button
@@ -701,20 +792,25 @@ export const LoginPage: React.FC = () => {
                 />
                 Remember me
               </label>
-              <button
-                type="button"
-                className="forgot"
-                onClick={() => alert('Password reset link sent to registered email.')}
-              >
-                Forgot password?
-              </button>
+              {mode === 'signin' && (
+                <button type="button" className="forgot" onClick={handleForgotPassword}>
+                  Forgot password?
+                </button>
+              )}
             </div>
 
             <button type="submit" className={`btn-login${isSubmitting ? ' loading' : ''}`} disabled={isSubmitting}>
-              <span className="btn-label">Log in</span>
+              <span className="btn-label">{mode === 'signin' ? 'Log in' : 'Create account'}</span>
               <span className="spinner"></span>
             </button>
           </form>
+
+          <p className="switch-mode">
+            {mode === 'signin' ? "Don't have an account?" : 'Already have an account?'}
+            <button type="button" onClick={switchMode}>
+              {mode === 'signin' ? 'Create one' : 'Log in'}
+            </button>
+          </p>
         </div>
       </div>
     </div>
