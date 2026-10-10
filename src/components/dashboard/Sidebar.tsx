@@ -9,8 +9,7 @@ import {
   ExternalLink, 
   Radio, 
   ChevronRight,
-  ShieldCheck,
-  Download
+  ShieldCheck
 } from 'lucide-react';
 import { useCustomer } from '../../context/CustomerContext';
 
@@ -161,24 +160,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false }) => {
             </button>
           </div>
         )}
-
-        {/* Download Project Source ZIP */}
-        <div className="pt-4">
-          <a
-            id="nav-item-download-zip"
-            href="/nexa-dashboard-source.zip"
-            download="nexa-dashboard-source.zip"
-            className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl font-bold text-xs text-[#7c3aed] hover:text-white bg-white/80 hover:bg-gradient-to-r hover:from-[#7c3aed] hover:to-[#22d3ee] border border-[#7c3aed]/20 transition-all cursor-pointer group shadow-xs"
-          >
-            <div className="flex items-center gap-2.5 truncate">
-              <Download className="w-3.5 h-3.5 text-[#7c3aed] group-hover:text-white group-hover:scale-110 transition-transform shrink-0" />
-              <span className="truncate">Download Project ZIP</span>
-            </div>
-            <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded-full bg-[#7c3aed]/10 group-hover:bg-white/20 text-[#7c3aed] group-hover:text-white">
-              .zip
-            </span>
-          </a>
-        </div>
       </div>
 
       {/* User profile & Logout */}
