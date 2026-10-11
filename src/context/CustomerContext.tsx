@@ -1,10 +1,9 @@
-import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { EMPTY_PROFILE, loadProfile, saveProfile } from '../lib/profileApi';
 import { UserProfile, ActivityItem, NotificationItem, AuthSession, UserRole } from '../types';
 import {
-  getStoredProfile,
-  saveStoredProfile,
   getStoredActivities,
   logActivity as recordActivity,
   getStoredNotifications,
@@ -25,6 +24,8 @@ interface SignUpResult {
 
 interface CustomerContextType {
   profile: UserProfile;
+  profileLoading: boolean;
+  saveError: string | null;
   updateProfile: (updates: Partial<UserProfile>) => void;
   updateNestedProfile: (section: keyof UserProfile, fields: Record<string, any>) => void;
   activities: ActivityItem[];
@@ -66,12 +67,19 @@ const toSession = (user: User | null): AuthSession => {
 };
 
 export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [profile, setProfile] = useState<UserProfile>(getStoredProfile);
+  const [profile, setProfile] = useState<UserProfile>(EMPTY_PROFILE);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [activities, setActivities] = useState<ActivityItem[]>(getStoredActivities);
   const [notifications, setNotifications] = useState<NotificationItem[]>(getStoredNotifications);
   const [session, setSession] = useState<AuthSession>(SIGNED_OUT);
   const [authLoading, setAuthLoading] = useState(true);
   const [isShareModalOpen, setShareModalOpen] = useState(false);
+
+  // Always-current copies, so callbacks never use stale data
+  const profileRef = useRef<UserProfile>(EMPTY_PROFILE);
+  const userRef = useRef<AuthSession['user']>(null);
+  userRef.current = session.user;
 
   // Simple client-side pushState / hash routing listener
   const getInitialRoute = () => {
@@ -122,6 +130,36 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return () => listener.subscription.unsubscribe();
   }, []);
 
+  // Load the real profile from Supabase when a user logs in
+  const userId = session.user?.id;
+  useEffect(() => {
+    if (!userId) {
+      profileRef.current = EMPTY_PROFILE;
+      setProfile(EMPTY_PROFILE);
+      return;
+    }
+
+    let cancelled = false;
+    setProfileLoading(true);
+    const user = userRef.current;
+
+    loadProfile(userId, user?.email ?? '', user?.name ?? '').then(({ profile: loaded, error }) => {
+      if (cancelled) return;
+      if (loaded) {
+        profileRef.current = loaded;
+        setProfile(loaded);
+        setSaveError(null);
+      } else if (error) {
+        setSaveError(error);
+      }
+      setProfileLoading(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
   // Authentication guards (wait until the saved session has been checked)
   useEffect(() => {
     if (authLoading) return;
@@ -138,35 +176,46 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, [session, authLoading, currentRoute, navigate]);
 
-  const updateProfile = useCallback((updates: Partial<UserProfile>) => {
-    setProfile(prev => {
-      const merged: UserProfile = {
-        ...prev,
-        ...updates,
-      };
-      saveStoredProfile(merged);
-      const acts = recordActivity('profile_updated', 'Profile updated', 'Personal details and credentials saved');
-      setActivities(acts);
-      return merged;
+  // Update the screen right away, then save to Supabase
+  const commitProfile = useCallback((merged: UserProfile, title: string, detail?: string) => {
+    profileRef.current = merged;
+    setProfile(merged);
+    setActivities(recordActivity('profile_updated', title, detail));
+
+    const user = userRef.current;
+    if (!user) return;
+
+    saveProfile(user.id, merged).then(async (err) => {
+      if (!err) {
+        setSaveError(null);
+        return;
+      }
+      setSaveError(err);
+      // saving failed: show what is really stored in the database
+      const { profile: stored } = await loadProfile(user.id, user.email, user.name);
+      if (stored) {
+        profileRef.current = stored;
+        setProfile(stored);
+      }
     });
   }, []);
 
+  const updateProfile = useCallback((updates: Partial<UserProfile>) => {
+    const merged: UserProfile = { ...profileRef.current, ...updates };
+    commitProfile(merged, 'Profile updated', 'Personal details and credentials saved');
+  }, [commitProfile]);
+
   const updateNestedProfile = useCallback((section: keyof UserProfile, fields: Record<string, any>) => {
-    setProfile(prev => {
-      const updatedSection = {
+    const prev = profileRef.current;
+    const merged: UserProfile = {
+      ...prev,
+      [section]: {
         ...(prev[section] as Record<string, any>),
         ...fields,
-      };
-      const merged: UserProfile = {
-        ...prev,
-        [section]: updatedSection,
-      };
-      saveStoredProfile(merged);
-      const acts = recordActivity('profile_updated', `${String(section).toUpperCase()} information updated`);
-      setActivities(acts);
-      return merged;
-    });
-  }, []);
+      },
+    };
+    commitProfile(merged, `${String(section).toUpperCase()} information updated`);
+  }, [commitProfile]);
 
   const recordCustomActivity = useCallback((type: ActivityItem['type'], title: string, detail?: string) => {
     const acts = recordActivity(type, title, detail);
@@ -227,6 +276,8 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     <CustomerContext.Provider
       value={{
         profile,
+        profileLoading,
+        saveError,
         updateProfile,
         updateNestedProfile,
         activities,
