@@ -1,0 +1,163 @@
+export interface ProfileTheme {
+  id: string;
+  name: string;
+  suitedFor: string;
+  swatch: [string, string];
+  vars: Record<string, string>;
+}
+
+const SANS = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+const SERIF = 'Georgia, "Times New Roman", serif';
+
+export const THEMES: ProfileTheme[] = [
+  {
+    id: 'aurora-glass',
+    name: 'Aurora Glass',
+    suitedFor: 'Tech professionals',
+    swatch: ['#7c3aed', '#22d3ee'],
+    vars: {
+      '--bg': '#faf9fd',
+      '--orb1': 'rgba(167,139,250,0.45)',
+      '--orb2': 'rgba(34,211,238,0.40)',
+      '--card': 'rgba(255,255,255,0.72)',
+      '--solid': '#ffffff',
+      '--border': 'rgba(124,58,237,0.15)',
+      '--text': '#1f1b2e',
+      '--muted': '#6b6478',
+      '--accent': '#7c3aed',
+      '--accent2': '#22d3ee',
+      '--chip': '#f3f1fb',
+      '--chipText': '#7c3aed',
+      '--btnText': '#ffffff',
+      '--tile': 'rgba(255,255,255,0.85)',
+      '--shadow': '0 20px 50px -12px rgba(124,58,237,0.18)',
+      '--font': SANS,
+    },
+  },
+  {
+    id: 'executive-black',
+    name: 'Executive Black',
+    suitedFor: 'CEOs and directors',
+    swatch: ['#0a0a0a', '#d4af37'],
+    vars: {
+      '--bg': '#050505',
+      '--orb1': 'rgba(212,175,55,0.16)',
+      '--orb2': 'rgba(255,255,255,0.05)',
+      '--card': 'rgba(20,20,20,0.92)',
+      '--solid': '#141414',
+      '--border': 'rgba(212,175,55,0.30)',
+      '--text': '#f5f5f5',
+      '--muted': '#a3a3a3',
+      '--accent': '#d4af37',
+      '--accent2': '#f1d77a',
+      '--chip': '#1f1f1f',
+      '--chipText': '#e5c45a',
+      '--btnText': '#0a0a0a',
+      '--tile': '#1a1a1a',
+      '--shadow': '0 20px 60px -15px rgba(0,0,0,0.8)',
+      '--font': SANS,
+    },
+  },
+  {
+    id: 'minimal-white',
+    name: 'Minimal White',
+    suitedFor: 'Consultants',
+    swatch: ['#ffffff', '#111111'],
+    vars: {
+      '--bg': '#f7f7f7',
+      '--orb1': 'rgba(0,0,0,0)',
+      '--orb2': 'rgba(0,0,0,0)',
+      '--card': '#ffffff',
+      '--solid': '#ffffff',
+      '--border': '#e5e5e5',
+      '--text': '#111111',
+      '--muted': '#6b7280',
+      '--accent': '#111111',
+      '--accent2': '#444444',
+      '--chip': '#f4f4f5',
+      '--chipText': '#111111',
+      '--btnText': '#ffffff',
+      '--tile': '#fafafa',
+      '--shadow': '0 10px 40px -12px rgba(0,0,0,0.12)',
+      '--font': SANS,
+    },
+  },
+  {
+    id: 'corporate-blue',
+    name: 'Corporate Blue',
+    suitedFor: 'Companies',
+    swatch: ['#1d4ed8', '#0ea5e9'],
+    vars: {
+      '--bg': '#eef4fb',
+      '--orb1': 'rgba(37,99,235,0.18)',
+      '--orb2': 'rgba(14,165,233,0.16)',
+      '--card': '#ffffff',
+      '--solid': '#ffffff',
+      '--border': 'rgba(30,64,175,0.14)',
+      '--text': '#0f172a',
+      '--muted': '#475569',
+      '--accent': '#1d4ed8',
+      '--accent2': '#0ea5e9',
+      '--chip': '#e6eefc',
+      '--chipText': '#1d4ed8',
+      '--btnText': '#ffffff',
+      '--tile': '#f8fbff',
+      '--shadow': '0 20px 50px -15px rgba(29,78,216,0.25)',
+      '--font': SANS,
+    },
+  },
+  {
+    id: 'creative-gradient',
+    name: 'Creative Gradient',
+    suitedFor: 'Designers and creators',
+    swatch: ['#ec4899', '#f59e0b'],
+    vars: {
+      '--bg': '#fff6fb',
+      '--orb1': 'rgba(244,114,182,0.45)',
+      '--orb2': 'rgba(251,191,36,0.38)',
+      '--card': 'rgba(255,255,255,0.78)',
+      '--solid': '#ffffff',
+      '--border': 'rgba(236,72,153,0.20)',
+      '--text': '#2a1a33',
+      '--muted': '#7a6585',
+      '--accent': '#ec4899',
+      '--accent2': '#f59e0b',
+      '--chip': '#fdeef6',
+      '--chipText': '#db2777',
+      '--btnText': '#ffffff',
+      '--tile': 'rgba(255,255,255,0.9)',
+      '--shadow': '0 20px 50px -12px rgba(236,72,153,0.28)',
+      '--font': SANS,
+    },
+  },
+  {
+    id: 'luxury-gold',
+    name: 'Luxury Gold',
+    suitedFor: 'Premium clients',
+    swatch: ['#1e160c', '#c9a227'],
+    vars: {
+      '--bg': '#120d06',
+      '--orb1': 'rgba(201,162,39,0.22)',
+      '--orb2': 'rgba(120,80,20,0.25)',
+      '--card': 'rgba(30,22,12,0.93)',
+      '--solid': '#1e160c',
+      '--border': 'rgba(201,162,39,0.38)',
+      '--text': '#fdf6e3',
+      '--muted': '#c2b08a',
+      '--accent': '#c9a227',
+      '--accent2': '#f3d27a',
+      '--chip': '#2a1f10',
+      '--chipText': '#e6c15a',
+      '--btnText': '#1a1205',
+      '--tile': '#241a0d',
+      '--shadow': '0 25px 60px -15px rgba(201,162,39,0.25)',
+      '--font': SERIF,
+    },
+  },
+];
+
+export const DEFAULT_THEME_ID = 'aurora-glass';
+
+export function getTheme(id?: string): ProfileTheme {
+  return THEMES.find((t) => t.id === id) ?? THEMES[0];
+}
