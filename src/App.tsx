@@ -11,11 +11,20 @@ import { AdminPage } from './pages/AdminPage';
 import { QuickRouteSwitcher } from './components/QuickRouteSwitcher';
 
 const AppRouter: React.FC = () => {
-  const { currentRoute, session } = useCustomer();
+  const { currentRoute, session, authLoading } = useCustomer();
 
   // If visiting public profile /u/:username
   if (currentRoute.startsWith('/u/')) {
     return <PublicProfilePage />;
+  }
+
+  // Wait until the saved login has been checked
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#faf9fd] text-sm font-semibold text-[#6b6478]">
+        Loading...
+      </div>
+    );
   }
 
   // If user is not authenticated and trying to access dashboard/admin
@@ -62,4 +71,3 @@ export default function App() {
     </CustomerProvider>
   );
 }
-
