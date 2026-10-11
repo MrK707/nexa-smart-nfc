@@ -21,7 +21,7 @@ export const SharePage: React.FC = () => {
   const [copied, setCopied] = useState(false);
   const [shareStatus, setShareStatus] = useState<string | null>(null);
 
-  const publicUrl = `https://tap.nexacreatives.site/u/${personal.username}`;
+  const publicUrl = `${window.location.origin}/u/${personal.username}`;
 
   useEffect(() => {
     QRCode.toDataURL(publicUrl, {
