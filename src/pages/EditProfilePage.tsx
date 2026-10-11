@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   UserPen, 
   Building2, 
@@ -10,20 +10,64 @@ import {
   Plus, 
   Trash2, 
   ExternalLink,
-  Sparkles
+  Sparkles,
+  Upload,
+  Palette,
+  Loader2
 } from 'lucide-react';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { useCustomer } from '../context/CustomerContext';
 import { UserProfile } from '../types';
+import { THEMES, getTheme } from '../lib/themes';
+import { uploadProfilePhoto } from '../lib/profileApi';
+import { PublicCardView } from '../components/PublicCardView';
 
 export const EditProfilePage: React.FC = () => {
-  const { profile, updateProfile, navigate } = useCustomer();
+  const { profile, profileLoading, saveError, session, updateProfile, navigate } = useCustomer();
   
   // Local state initialized with current profile
   const [formData, setFormData] = useState<UserProfile>(profile);
-  const [activeTab, setActiveTab] = useState<'personal' | 'business' | 'contact' | 'social'>('personal');
+  const [activeTab, setActiveTab] = useState<'personal' | 'business' | 'contact' | 'social' | 'design'>('personal');
   const [isSaved, setIsSaved] = useState(false);
   const [newService, setNewService] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const [uploadNote, setUploadNote] = useState('');
+
+  // When the saved profile finishes loading, fill the form with it
+  useEffect(() => {
+    if (profile.id) setFormData(profile);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile.id]);
+
+  const handleUploadPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file || !session.user) return;
+    setUploading(true);
+    setUploadError('');
+    setUploadNote('');
+    const { url, error } = await uploadProfilePhoto(session.user.id, file);
+    setUploading(false);
+    if (error || !url) {
+      setUploadError(error || 'Upload failed');
+      return;
+    }
+    handlePersonalChange('profile_photo', url);
+    setUploadNote('Photo uploaded. Tap Save Changes to apply it.');
+  };
+
+  const handleRemovePhoto = () => {
+    handlePersonalChange('profile_photo', '');
+    setUploadNote('Photo removed. Tap Save Changes to apply it.');
+  };
+
+  const handleThemeChange = (themeId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      card: { ...prev.card, card_color_theme: themeId },
+    }));
+  };
 
   const handlePersonalChange = (field: keyof UserProfile['personal'], value: string) => {
     setFormData(prev => ({
@@ -94,6 +138,14 @@ export const EditProfilePage: React.FC = () => {
     setTimeout(() => setIsSaved(false), 3000);
   };
 
+  if (profileLoading || !profile.id) {
+    return (
+      <DashboardLayout>
+        <div className="py-20 text-center text-sm font-semibold text-[#6b6478]">Loading your profile...</div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-300">
@@ -138,6 +190,12 @@ export const EditProfilePage: React.FC = () => {
           </div>
         </div>
 
+        {saveError && (
+          <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold">
+            Could not save: {saveError}
+          </div>
+        )}
+
         {/* Tab Selection Navigation */}
         <div className="flex items-center gap-2 p-2 bg-white/[0.75] backdrop-blur-[16px] border border-[#7c3aed]/15 rounded-3xl shadow-xs overflow-x-auto">
           {[
@@ -145,6 +203,7 @@ export const EditProfilePage: React.FC = () => {
             { id: 'business', label: 'Business & Bio', icon: Building2 },
             { id: 'contact', label: 'Contact Details', icon: Phone },
             { id: 'social', label: 'Social Networks', icon: Share2 },
+            { id: 'design', label: 'Design & Theme', icon: Palette },
           ].map((tab) => {
             const Icon = tab.icon;
             const isTabActive = activeTab === tab.id;
@@ -175,45 +234,55 @@ export const EditProfilePage: React.FC = () => {
                 Personal Identity
               </h3>
 
-              {/* Profile Photo URL & Quick Presets */}
+              {/* Profile Photo Upload */}
               <div className="space-y-3">
                 <label className="block text-xs font-bold uppercase tracking-wider text-[#6b6478]">
-                  Profile Photo URL
+                  Profile Photo
                 </label>
                 <div className="flex flex-col sm:flex-row items-center gap-4">
-                  <div className="relative w-20 h-20 rounded-2xl p-[2px] bg-gradient-to-tr from-[#7c3aed] to-[#22d3ee] shrink-0 shadow-md">
-                    <img
-                      src={formData.personal.profile_photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'}
-                      alt="Preview"
-                      className="w-full h-full rounded-[14px] object-cover bg-violet-50"
-                    />
+                  <div className="relative w-24 h-24 rounded-2xl p-[2px] bg-gradient-to-tr from-[#7c3aed] to-[#22d3ee] shrink-0 shadow-md">
+                    {formData.personal.profile_photo ? (
+                      <img
+                        src={formData.personal.profile_photo}
+                        alt="Preview"
+                        className="w-full h-full rounded-[14px] object-cover bg-violet-50"
+                      />
+                    ) : (
+                      <div className="w-full h-full rounded-[14px] bg-violet-50 flex items-center justify-center text-[#7c3aed]">
+                        <UserPen className="w-8 h-8" />
+                      </div>
+                    )}
                   </div>
                   <div className="flex-1 w-full space-y-2">
-                    <input
-                      type="url"
-                      id="input-profile-photo"
-                      value={formData.personal.profile_photo}
-                      onChange={(e) => handlePersonalChange('profile_photo', e.target.value)}
-                      placeholder="https://example.com/avatar.jpg"
-                      className="w-full px-4 py-3 rounded-2xl bg-[#f3f1fb] border border-[#7c3aed]/15 focus:border-[#7c3aed] focus:bg-white focus:outline-hidden text-sm text-[#1f1b2e] font-medium transition-colors shadow-2xs"
-                    />
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-[11px] text-[#6b6478] font-bold">Quick Avatars:</span>
-                      {[
-                        { label: 'Executive 1', url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80' },
-                        { label: 'Executive 2', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80' },
-                        { label: 'Executive 3', url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80' },
-                      ].map((preset) => (
+                      <label
+                        htmlFor="input-profile-photo-file"
+                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold bg-[#7c3aed]/10 hover:bg-[#7c3aed]/20 text-[#7c3aed] border border-[#7c3aed]/20 cursor-pointer transition-colors"
+                      >
+                        {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                        <span>{uploading ? 'Uploading...' : 'Upload Photo'}</span>
+                      </label>
+                      <input
+                        id="input-profile-photo-file"
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        className="hidden"
+                        onChange={handleUploadPhoto}
+                        disabled={uploading}
+                      />
+                      {formData.personal.profile_photo && (
                         <button
-                          key={preset.label}
                           type="button"
-                          onClick={() => handlePersonalChange('profile_photo', preset.url)}
-                          className="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-[#7c3aed]/10 hover:bg-[#7c3aed]/20 text-[#7c3aed] border border-[#7c3aed]/20 transition-colors cursor-pointer"
+                          onClick={handleRemovePhoto}
+                          className="px-3 py-2.5 rounded-2xl text-xs font-bold text-[#6b6478] hover:text-rose-600 transition-colors cursor-pointer"
                         >
-                          {preset.label}
+                          Remove
                         </button>
-                      ))}
+                      )}
                     </div>
+                    <p className="text-[11px] text-[#6b6478] font-medium">JPG, PNG or WebP. A square photo works best.</p>
+                    {uploadError && <p className="text-xs font-bold text-rose-600">{uploadError}</p>}
+                    {uploadNote && <p className="text-xs font-bold text-emerald-600">{uploadNote}</p>}
                   </div>
                 </div>
               </div>
@@ -256,13 +325,14 @@ export const EditProfilePage: React.FC = () => {
                   Card Handle / Username (used in NFC public URL)
                 </label>
                 <div className="flex items-center rounded-2xl bg-[#f3f1fb] border border-[#7c3aed]/15 focus-within:border-[#7c3aed] px-3.5 py-1.5 transition-colors shadow-2xs">
-                  <span className="text-xs text-[#6b6478] font-mono font-medium">tap.nexacreatives.site/u/</span>
+                  <span className="text-xs text-[#6b6478] font-mono font-medium">{window.location.host}/u/</span>
                   <input
                     type="text"
                     id="input-username"
                     value={formData.personal.username}
                     onChange={(e) => handlePersonalChange('username', e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
                     placeholder="username"
+                    minLength={3}
                     required
                     className="flex-1 px-1 py-1 bg-transparent border-none focus:outline-hidden text-sm text-[#7c3aed] font-bold font-mono"
                   />
@@ -507,6 +577,58 @@ export const EditProfilePage: React.FC = () => {
                       placeholder="john_perera"
                       className="flex-1 px-1 py-1 bg-transparent border-none focus:outline-hidden text-sm text-[#1f1b2e] font-medium"
                     />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5: Design & Theme */}
+          {activeTab === 'design' && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              <div className="lg:col-span-7 rounded-3xl p-6 sm:p-8 bg-white/[0.72] backdrop-blur-[16px] border border-[#7c3aed]/15 shadow-[0_20px_45px_-12px_rgba(124,58,237,0.08),0_0_0_1px_rgba(255,255,255,0.8)_inset] space-y-5">
+                <div>
+                  <h3 className="text-base font-extrabold text-[#1f1b2e] tracking-tight">Choose Your Card Design</h3>
+                  <p className="text-xs text-[#6b6478] mt-1 font-medium">
+                    Your link and QR code stay the same. Only the look changes. Tap Save Changes to publish.
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {THEMES.map((t) => {
+                    const selected = getTheme(formData.card.card_color_theme).id === t.id;
+                    return (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => handleThemeChange(t.id)}
+                        className={`text-left p-3 rounded-2xl border transition-all cursor-pointer ${
+                          selected
+                            ? 'border-[#7c3aed] bg-[#7c3aed]/8 shadow-md'
+                            : 'border-[#7c3aed]/15 bg-white/80 hover:border-[#7c3aed]/40'
+                        }`}
+                      >
+                        <div
+                          className="h-14 rounded-xl mb-3 border border-black/5"
+                          style={{ background: `linear-gradient(135deg, ${t.swatch[0]}, ${t.swatch[1]})` }}
+                        />
+                        <div className="flex items-center justify-between gap-2">
+                          <div>
+                            <p className="text-sm font-extrabold text-[#1f1b2e]">{t.name}</p>
+                            <p className="text-[11px] text-[#6b6478] font-medium">{t.suitedFor}</p>
+                          </div>
+                          {selected && <Check className="w-4 h-4 text-[#7c3aed] shrink-0" />}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="lg:col-span-5">
+                <div className="lg:sticky lg:top-4 space-y-2">
+                  <p className="text-xs font-bold uppercase tracking-wider text-[#6b6478]">Live Preview</p>
+                  <div className="rounded-3xl overflow-hidden border border-[#7c3aed]/15 shadow-md">
+                    <PublicCardView profile={formData} themeId={formData.card.card_color_theme} preview />
                   </div>
                 </div>
               </div>
