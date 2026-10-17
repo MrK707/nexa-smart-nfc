@@ -268,11 +268,12 @@ export const LoginPage: React.FC = () => {
     <div className="login-page-root">
       <style>{`
         .login-page-root{
-          --black:#141414;
-          --field-bg:#f2f2f2;
-          --field-border:#e2e2e2;
-          --text-main:#111111;
-          --text-muted:#6b6b6b;
+          --black:#7c3aed;
+          --grad:linear-gradient(135deg,#7c3aed 0%,#22d3ee 100%);
+          --field-bg:#f3f1fb;
+          --field-border:rgba(124,58,237,0.18);
+          --text-main:#1f1b2e;
+          --text-muted:#6b6478;
           --radius-card:28px;
           --radius-field:14px;
           --ease: cubic-bezier(.4,0,.2,1);
@@ -281,7 +282,7 @@ export const LoginPage: React.FC = () => {
           display:flex;
           align-items:center;
           justify-content:center;
-          background:#ffffff;
+          background:#faf9fd;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
           -webkit-font-smoothing:antialiased;
           padding:40px 20px;
@@ -295,8 +296,8 @@ export const LoginPage: React.FC = () => {
           inset:0;
           z-index:-1;
           background:
-            radial-gradient(600px 400px at 15% 20%, rgba(0,0,0,0.02), transparent 60%),
-            radial-gradient(600px 400px at 85% 80%, rgba(0,0,0,0.03), transparent 60%);
+            radial-gradient(600px 400px at 15% 20%, rgba(124,58,237,0.14), transparent 60%),
+            radial-gradient(600px 400px at 85% 80%, rgba(34,211,238,0.16), transparent 60%);
           animation: bgDrift 18s ease-in-out infinite alternate;
         }
 
@@ -315,8 +316,8 @@ export const LoginPage: React.FC = () => {
           border-radius:var(--radius-card);
           overflow:hidden;
           box-shadow:
-            0 30px 60px -20px rgba(0,0,0,0.35),
-            0 10px 25px -10px rgba(0,0,0,0.15);
+            0 30px 60px -20px rgba(124,58,237,0.35),
+            0 10px 25px -10px rgba(124,58,237,0.15);
           opacity:0;
           transform: translateY(24px) scale(.98);
           animation: cardEnter .8s var(--ease) forwards;
@@ -326,7 +327,7 @@ export const LoginPage: React.FC = () => {
 
         .left-panel{
           flex:1 1 50%;
-          background: linear-gradient(160deg,#181818 0%, #0f0f0f 100%);
+          background: linear-gradient(160deg,#1f1b2e 0%, #2e1a6b 55%, #4c1d95 100%);
           position:relative;
           display:flex;
           align-items:center;
@@ -342,7 +343,7 @@ export const LoginPage: React.FC = () => {
           transform:translateX(-50%);
           width:220px;
           height:60px;
-          background: radial-gradient(ellipse at center, rgba(255,255,255,0.18), rgba(255,255,255,0) 70%);
+          background: radial-gradient(ellipse at center, rgba(34,211,238,0.5), rgba(34,211,238,0) 70%);
           filter: blur(4px);
           opacity:0;
           animation: glowFade 1.4s var(--ease) forwards;
@@ -416,7 +417,7 @@ export const LoginPage: React.FC = () => {
           height:210px;
           margin:-105px 0 0 -105px;
           border-radius:50%;
-          background: radial-gradient(circle, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.08) 45%, rgba(255,255,255,0) 72%);
+          background: radial-gradient(circle, rgba(167,139,250,0.55) 0%, rgba(34,211,238,0.14) 45%, rgba(34,211,238,0) 72%);
           opacity:0;
           transform:scale(0.85);
           pointer-events:none;
@@ -437,7 +438,7 @@ export const LoginPage: React.FC = () => {
           width:44px;
           height:44px;
           border-radius:50%;
-          background:#ececec;
+          background:rgba(124,58,237,0.12);
           display:flex;
           align-items:center;
           justify-content:center;
@@ -448,7 +449,7 @@ export const LoginPage: React.FC = () => {
           animation-delay:.35s;
         }
 
-        .avatar svg{ width:22px; height:22px; fill:#9a9a9a; }
+        .avatar svg{ width:22px; height:22px; fill:#7c3aed; }
 
         @keyframes fadeDown{ to{ opacity:1; transform:translateY(0); } }
 
@@ -542,7 +543,7 @@ export const LoginPage: React.FC = () => {
         .input-wrap input:focus{
           border-color: var(--black);
           background:#ffffff;
-          box-shadow: 0 0 0 4px rgba(20,20,20,0.06);
+          box-shadow: 0 0 0 4px rgba(124,58,237,0.14);
         }
 
         .toggle-pass{
@@ -560,7 +561,7 @@ export const LoginPage: React.FC = () => {
           cursor:pointer;
           border-radius:8px;
         }
-        .toggle-pass:hover{ color:var(--text-main); background:#efefef; }
+        .toggle-pass:hover{ color:var(--text-main); background:#ebe7f8; }
         .toggle-pass svg{ width:18px; height:18px; }
 
         .row-between{
@@ -586,7 +587,7 @@ export const LoginPage: React.FC = () => {
         .remember input{ accent-color:var(--black); width:15px; height:15px; cursor:pointer; }
 
         .forgot{
-          color:var(--text-main);
+          color:var(--black);
           text-decoration:none;
           font-weight:600;
           background:none;
@@ -600,7 +601,7 @@ export const LoginPage: React.FC = () => {
         .btn-login{
           position:relative;
           padding:15px 16px;
-          background:var(--black);
+          background:var(--grad);
           color:#fff;
           border:none;
           border-radius:var(--radius-field);
@@ -617,7 +618,7 @@ export const LoginPage: React.FC = () => {
           justify-content:center;
           gap:8px;
         }
-        .btn-login:hover{ transform:translateY(-1px); box-shadow:0 10px 20px -8px rgba(0,0,0,0.4); }
+        .btn-login:hover{ transform:translateY(-1px); box-shadow:0 10px 24px -8px rgba(124,58,237,0.55); }
         .btn-login:active{ transform:translateY(0); }
         .btn-login:disabled{ opacity:.75; cursor:default; transform:none; }
 
@@ -648,7 +649,7 @@ export const LoginPage: React.FC = () => {
           margin-left:6px;
           font-size:13px;
           font-weight:700;
-          color:var(--text-main);
+          color:var(--black);
           cursor:pointer;
         }
         .switch-mode button:hover{ text-decoration:underline; }
@@ -659,7 +660,7 @@ export const LoginPage: React.FC = () => {
           .right-panel{ padding:36px 28px; }
         }
 
-        :focus-visible{ outline:2px solid #141414; outline-offset:2px; }
+        :focus-visible{ outline:2px solid #7c3aed; outline-offset:2px; }
       `}</style>
 
       <div className="card">
@@ -688,14 +689,14 @@ export const LoginPage: React.FC = () => {
                   strokeWidth={6}
                   strokeLinejoin="round"
                 />
-                <rect x="70" y="90" width="60" height="50" rx="10" fill="#e9e9e9" />
+                <rect x="70" y="90" width="60" height="50" rx="10" fill="#ede9fe" />
                 <g className="eye-track" ref={eyeTrackRef}>
-                  <g className="eye-x-inner" stroke="#141414" strokeWidth={7} strokeLinecap="round">
+                  <g className="eye-x-inner" stroke="#7c3aed" strokeWidth={7} strokeLinecap="round">
                     <line x1="80" y1="103" x2="96" y2="119" />
                     <line x1="96" y1="103" x2="80" y2="119" />
                   </g>
                 </g>
-                <rect x="112" y="108" width="8" height="8" fill="#141414" />
+                <rect x="112" y="108" width="8" height="8" fill="#7c3aed" />
               </g>
             </svg>
             <div className="glow"></div>
