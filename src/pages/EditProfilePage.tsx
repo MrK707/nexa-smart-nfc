@@ -19,7 +19,8 @@ import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { useCustomer } from '../context/CustomerContext';
 import { UserProfile } from '../types';
 import { THEMES, getTheme } from '../lib/themes';
-import { uploadProfilePhoto } from '../lib/profileApi';
+import { uploadCroppedPhoto } from '../lib/profileApi';
+import { PhotoCropper } from '../components/PhotoCropper';
 import { ThemedCard } from '../components/ThemedCard';
 
 export const EditProfilePage: React.FC = () => {
@@ -31,6 +32,7 @@ export const EditProfilePage: React.FC = () => {
   const [isSaved, setIsSaved] = useState(false);
   const [newService, setNewService] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [cropFile, setCropFile] = useState<File | null>(null);
   const [uploadError, setUploadError] = useState('');
   const [uploadNote, setUploadNote] = useState('');
 
@@ -40,21 +42,37 @@ export const EditProfilePage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile.id]);
 
-  const handleUploadPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // step 1: a photo is chosen, so open the crop window
+  const handleUploadPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
-    if (!file || !session.user) return;
-    setUploading(true);
+    if (!file) return;
     setUploadError('');
     setUploadNote('');
-    const { url, error } = await uploadProfilePhoto(session.user.id, file);
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setUploadError('Please choose a JPG, PNG or WebP image');
+      return;
+    }
+    if (file.size > 12 * 1024 * 1024) {
+      setUploadError('Image is too large (maximum 12 MB)');
+      return;
+    }
+    setCropFile(file);
+  };
+
+  // step 2: the photo was cropped, so upload it
+  const handleCropDone = async (blob: Blob) => {
+    setCropFile(null);
+    if (!session.user) return;
+    setUploading(true);
+    const { url, error } = await uploadCroppedPhoto(session.user.id, blob);
     setUploading(false);
     if (error || !url) {
       setUploadError(error || 'Upload failed');
       return;
     }
     handlePersonalChange('profile_photo', url);
-    setUploadNote('Photo uploaded. Tap Save Changes to apply it.');
+    setUploadNote('Photo ready. Tap Save Changes to apply it.');
   };
 
   const handleRemovePhoto = () => {
@@ -189,6 +207,10 @@ export const EditProfilePage: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {cropFile && (
+          <PhotoCropper file={cropFile} onCancel={() => setCropFile(null)} onDone={handleCropDone} />
+        )}
 
         {saveError && (
           <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold">
