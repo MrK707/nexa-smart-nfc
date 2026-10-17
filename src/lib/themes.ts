@@ -3,6 +3,7 @@ export interface ProfileTheme {
   name: string;
   suitedFor: string;
   swatch: [string, string];
+  layout?: 'classic' | 'aqua' | 'purple';
   vars: Record<string, string>;
 }
 
@@ -153,6 +154,22 @@ export const THEMES: ProfileTheme[] = [
       '--shadow': '0 25px 60px -15px rgba(201,162,39,0.25)',
       '--font': SERIF,
     },
+  },
+  {
+    id: 'nexa-aqua',
+    name: 'Nexa Aqua 3D',
+    suitedFor: 'Founders and bold brands',
+    swatch: ['#0B0C10', '#66FCF1'],
+    layout: 'aqua',
+    vars: {},
+  },
+  {
+    id: 'nexa-purple',
+    name: 'Nexa Purple Arch',
+    suitedFor: 'Professionals and teams',
+    swatch: ['#5b2fe6', '#ff9bd9'],
+    layout: 'purple',
+    vars: {},
   },
 ];
 
