@@ -20,7 +20,7 @@ import { useCustomer } from '../context/CustomerContext';
 import { UserProfile } from '../types';
 import { THEMES, getTheme } from '../lib/themes';
 import { uploadProfilePhoto } from '../lib/profileApi';
-import { PublicCardView } from '../components/PublicCardView';
+import { ThemedCard } from '../components/ThemedCard';
 
 export const EditProfilePage: React.FC = () => {
   const { profile, profileLoading, saveError, session, updateProfile, navigate } = useCustomer();
@@ -628,7 +628,7 @@ export const EditProfilePage: React.FC = () => {
                 <div className="lg:sticky lg:top-4 space-y-2">
                   <p className="text-xs font-bold uppercase tracking-wider text-[#6b6478]">Live Preview</p>
                   <div className="rounded-3xl overflow-hidden border border-[#7c3aed]/15 shadow-md">
-                    <PublicCardView profile={formData} themeId={formData.card.card_color_theme} preview />
+                    <ThemedCard profile={formData} themeId={formData.card.card_color_theme} preview />
                   </div>
                 </div>
               </div>
