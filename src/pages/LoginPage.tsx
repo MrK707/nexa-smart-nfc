@@ -327,33 +327,137 @@ export const LoginPage: React.FC = () => {
 
         .left-panel{
           flex:1 1 50%;
-          background: linear-gradient(160deg,#1f1b2e 0%, #2e1a6b 55%, #4c1d95 100%);
           position:relative;
           display:flex;
+          flex-direction:column;
           align-items:center;
           justify-content:center;
           min-width:0;
           overflow:hidden;
+          padding:36px 32px;
+          background: linear-gradient(160deg,#1a1033 0%, #2a1566 50%, #3b1a8c 100%);
         }
 
-        .left-panel .glow{
+        .lp-orb{
           position:absolute;
-          bottom:6%;
-          left:50%;
-          transform:translateX(-50%);
-          width:220px;
-          height:60px;
-          background: radial-gradient(ellipse at center, rgba(34,211,238,0.5), rgba(34,211,238,0) 70%);
-          filter: blur(4px);
-          opacity:0;
-          animation: glowFade 1.4s var(--ease) forwards;
-          animation-delay: .9s;
+          border-radius:50%;
+          filter:blur(70px);
+          pointer-events:none;
+          animation: lpDrift 16s ease-in-out infinite alternate;
+        }
+        .lp-orb.a{ width:300px; height:300px; left:-90px; top:-70px; background:#7c3aed; opacity:.55; }
+        .lp-orb.b{ width:280px; height:280px; right:-100px; bottom:70px; background:#22d3ee; opacity:.30; animation-duration:20s; animation-delay:-6s; }
+        .lp-orb.c{ width:220px; height:220px; left:18%; bottom:-80px; background:#c084fc; opacity:.35; animation-duration:24s; animation-delay:-10s; }
+        @keyframes lpDrift{ to{ transform: translate(40px,30px) scale(1.15); } }
+
+        .lp-grid{
+          position:absolute;
+          inset:0;
+          pointer-events:none;
+          background-image: radial-gradient(rgba(255,255,255,0.20) 1px, transparent 1.4px);
+          background-size:22px 22px;
+          -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 45%, #000 20%, transparent 75%);
+          mask-image: radial-gradient(ellipse 80% 70% at 50% 45%, #000 20%, transparent 75%);
         }
 
-        @keyframes glowFade{ to{ opacity:1; } }
+        .lp-brand{
+          position:absolute;
+          top:28px;
+          left:30px;
+          z-index:2;
+          display:flex;
+          align-items:center;
+          gap:10px;
+          color:#fff;
+        }
+        .lp-mark{
+          width:36px;
+          height:36px;
+          border-radius:11px;
+          display:grid;
+          place-items:center;
+          font-weight:800;
+          font-size:16px;
+          background: linear-gradient(135deg,#7c3aed,#22d3ee);
+          box-shadow:0 8px 20px -6px rgba(34,211,238,0.5);
+        }
+        .lp-brand b{ display:block; font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; }
+        .lp-brand small{ display:block; margin-top:2px; font-size:9.5px; letter-spacing:.22em; font-weight:600; color:rgba(255,255,255,0.6); }
+
+        .lp-stage{
+          position:relative;
+          z-index:1;
+          width:300px;
+          height:300px;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+        }
+        .lp-ring{
+          position:absolute;
+          left:50%;
+          top:50%;
+          width:180px;
+          height:180px;
+          margin:-90px 0 0 -90px;
+          border-radius:50%;
+          border:1.5px solid rgba(103,232,249,0.55);
+          opacity:0;
+          animation: lpRing 4.5s cubic-bezier(.2,.6,.3,1) infinite;
+        }
+        .lp-ring:nth-child(2){ animation-delay:1.5s; }
+        .lp-ring:nth-child(3){ animation-delay:3s; }
+        @keyframes lpRing{
+          0%{ transform:scale(.55); opacity:.8; }
+          100%{ transform:scale(1.7); opacity:0; }
+        }
+
+        .lp-chip{
+          position:absolute;
+          z-index:2;
+          display:inline-flex;
+          align-items:center;
+          gap:7px;
+          padding:7px 12px;
+          border-radius:999px;
+          font-size:11.5px;
+          font-weight:700;
+          color:#fff;
+          white-space:nowrap;
+          background:rgba(255,255,255,0.10);
+          border:1px solid rgba(255,255,255,0.22);
+          -webkit-backdrop-filter:blur(10px);
+          backdrop-filter:blur(10px);
+          box-shadow:0 10px 24px -10px rgba(0,0,0,0.5);
+          animation: lpFloat 6s ease-in-out infinite alternate;
+        }
+        .lp-chip i{ width:7px; height:7px; border-radius:50%; background:#22d3ee; box-shadow:0 0 10px #22d3ee; }
+        .lp-chip.c1{ left:-24px; top:34px; }
+        .lp-chip.c2{ right:-34px; top:120px; animation-delay:-2s; }
+        .lp-chip.c3{ left:4px; bottom:22px; animation-delay:-4s; }
+        @keyframes lpFloat{ to{ transform: translateY(-10px); } }
+
+        .lp-copy{
+          position:absolute;
+          left:30px;
+          right:30px;
+          bottom:32px;
+          z-index:2;
+          color:#fff;
+        }
+        .lp-copy h2{ margin:0; font-size:24px; line-height:1.15; font-weight:800; letter-spacing:-.02em; }
+        .lp-copy h2 span{
+          background:linear-gradient(90deg,#c4b5fd,#67e8f9);
+          -webkit-background-clip:text;
+          background-clip:text;
+          color:transparent;
+          -webkit-text-fill-color:transparent;
+        }
+        .lp-copy p{ margin:8px 0 0; font-size:12.5px; line-height:1.5; max-width:320px; color:rgba(255,255,255,0.68); }
 
         .bot-wrap{
           position:relative;
+          z-index:1;
           opacity:0;
           transform: translateY(16px);
           animation: botEnter 1s var(--ease) forwards;
@@ -370,7 +474,7 @@ export const LoginPage: React.FC = () => {
         }
 
         .bot{
-          width:190px;
+          width:200px;
           height:auto;
           display:block;
           animation: botFloat 4.5s ease-in-out infinite;
@@ -656,7 +760,12 @@ export const LoginPage: React.FC = () => {
 
         @media (max-width: 760px){
           .card{ flex-direction:column; min-height:auto; }
-          .left-panel{ padding:32px 20px; min-height:200px; }
+          .left-panel{ padding:64px 20px 28px; min-height:300px; }
+          .lp-brand{ top:16px; left:18px; }
+          .lp-copy{ display:none; }
+          .lp-chip{ display:none; }
+          .lp-stage{ width:220px; height:220px; }
+          .bot{ width:150px; }
           .right-panel{ padding:36px 28px; }
         }
 
@@ -666,7 +775,24 @@ export const LoginPage: React.FC = () => {
       <div className="card">
         {/* LEFT PANEL */}
         <div className="left-panel">
-          <div
+          <span className="lp-orb a"></span>
+          <span className="lp-orb b"></span>
+          <span className="lp-orb c"></span>
+          <span className="lp-grid"></span>
+
+          <div className="lp-brand">
+            <span className="lp-mark">N</span>
+            <div>
+              <b>Nexa Creatives</b>
+              <small>SMART NFC</small>
+            </div>
+          </div>
+
+          <div className="lp-stage">
+            <span className="lp-ring"></span>
+            <span className="lp-ring"></span>
+            <span className="lp-ring"></span>
+            <div
             className="bot-wrap"
             ref={botWrapRef}
             tabIndex={0}
@@ -699,7 +825,19 @@ export const LoginPage: React.FC = () => {
                 <rect x="112" y="108" width="8" height="8" fill="#7c3aed" />
               </g>
             </svg>
-            <div className="glow"></div>
+            </div>
+            <span className="lp-chip c1"><i></i>NFC Tap</span>
+            <span className="lp-chip c2"><i></i>QR Share</span>
+            <span className="lp-chip c3"><i></i>Save Contact</span>
+          </div>
+
+          <div className="lp-copy">
+            <h2>
+              Your digital identity,
+              <br />
+              <span>one tap away.</span>
+            </h2>
+            <p>Smart NFC business cards for modern professionals. Share, connect and get remembered.</p>
           </div>
         </div>
 
