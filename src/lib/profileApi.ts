@@ -170,3 +170,21 @@ export async function uploadProfilePhoto(
   const { data } = supabase.storage.from('profile-media').getPublicUrl(path);
   return { url: data.publicUrl, error: null };
 }
+
+// Upload a photo that was already cropped in the browser (640 x 640 JPEG)
+export async function uploadCroppedPhoto(
+  userId: string,
+  blob: Blob
+): Promise<{ url: string | null; error: string | null }> {
+  if (blob.size > 5 * 1024 * 1024) {
+    return { url: null, error: 'The photo is too large. Please try a smaller one.' };
+  }
+  const path = `${userId}/avatar-${Date.now()}.jpg`;
+  const { error } = await supabase.storage
+    .from('profile-media')
+    .upload(path, blob, { contentType: 'image/jpeg', cacheControl: '31536000' });
+  if (error) return { url: null, error: error.message };
+
+  const { data } = supabase.storage.from('profile-media').getPublicUrl(path);
+  return { url: data.publicUrl, error: null };
+}
