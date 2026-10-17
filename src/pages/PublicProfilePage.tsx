@@ -5,6 +5,7 @@ import { downloadVCard } from '../lib/vcard';
 import { loadPublicProfile } from '../lib/profileApi';
 import { getTheme } from '../lib/themes';
 import { PublicCardView, themeVars } from '../components/PublicCardView';
+import { FramedCard } from '../components/FramedCard';
 import type { UserProfile } from '../types';
 
 type LoadState =
@@ -94,6 +95,39 @@ export const PublicProfilePage: React.FC = () => {
 
   const { profile } = state;
   const theme = getTheme(profile.card.card_color_theme);
+
+  // Full-page designs (Aqua 3D and Purple Arch)
+  if (theme.layout === 'aqua' || theme.layout === 'purple') {
+    return (
+      <div style={{ position: 'fixed', inset: 0, background: theme.layout === 'aqua' ? '#0B0C10' : '#e6deff' }}>
+        <FramedCard
+          profile={profile}
+          layout={theme.layout}
+          fixed
+          onSave={() => downloadVCard(profile)}
+          onShare={handleShare}
+        />
+        {session.isAuthenticated && (
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="fixed left-3 bottom-3 z-50 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold cursor-pointer"
+            style={{ background: 'rgba(0,0,0,0.75)', color: '#fff', border: '1px solid rgba(255,255,255,0.25)' }}
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Dashboard</span>
+          </button>
+        )}
+        {shareNote && (
+          <div
+            className="fixed left-1/2 top-4 z-50 -translate-x-1/2 px-4 py-2 rounded-full text-xs font-bold"
+            style={{ background: 'rgba(0,0,0,0.8)', color: '#fff' }}
+          >
+            {shareNote}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div
