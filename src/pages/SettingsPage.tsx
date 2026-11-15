@@ -6,8 +6,7 @@ import {
   User, 
   LogOut, 
   Check, 
-  Radio, 
-  Download
+  Radio
 } from 'lucide-react';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { useCustomer } from '../context/CustomerContext';
@@ -18,8 +17,15 @@ export const SettingsPage: React.FC = () => {
 
   const isCardActive = card.card_status === 'active';
   const [showSavedFeedback, setShowSavedFeedback] = useState(false);
-  const [hidePhoneOnPublic, setHidePhoneOnPublic] = useState(false);
-  const [allowInstantVcard, setAllowInstantVcard] = useState(true);
+  const allowInstantVcard = card.allow_vcard !== false;
+  const hidePhoneOnPublic = card.hide_phone === true;
+
+  // Privacy choices are saved to the account and used by the public card
+  const savePrivacy = (changes: { allow_vcard?: boolean; hide_phone?: boolean }) => {
+    updateProfile({ card: { ...card, ...changes } });
+    setShowSavedFeedback(true);
+    setTimeout(() => setShowSavedFeedback(false), 3000);
+  };
 
   const toggleCardLock = () => {
     const nextStatus = isCardActive ? 'locked' : 'active';
@@ -126,7 +132,7 @@ export const SettingsPage: React.FC = () => {
               <input
                 type="checkbox"
                 checked={allowInstantVcard}
-                onChange={(e) => setAllowInstantVcard(e.target.checked)}
+                onChange={(e) => savePrivacy({ allow_vcard: e.target.checked })}
                 className="w-4 h-4 accent-[#7c3aed] rounded cursor-pointer"
               />
             </div>
@@ -141,7 +147,7 @@ export const SettingsPage: React.FC = () => {
               <input
                 type="checkbox"
                 checked={hidePhoneOnPublic}
-                onChange={(e) => setHidePhoneOnPublic(e.target.checked)}
+                onChange={(e) => savePrivacy({ hide_phone: e.target.checked })}
                 className="w-4 h-4 accent-[#7c3aed] rounded cursor-pointer"
               />
             </div>
@@ -174,37 +180,6 @@ export const SettingsPage: React.FC = () => {
               <LogOut className="w-4 h-4" />
               <span>Log out</span>
             </button>
-          </div>
-        </div>
-
-        {/* Section 4: Export Source Code & Assets */}
-        <div className="rounded-3xl p-6 sm:p-7 bg-white/[0.72] backdrop-blur-[16px] border border-[#7c3aed]/20 shadow-[0_20px_45px_-12px_rgba(124,58,237,0.08),0_0_0_1px_rgba(255,255,255,0.8)_inset] space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Download className="w-4 h-4 text-[#7c3aed]" />
-              <h3 className="text-base font-extrabold text-[#1f1b2e] tracking-tight">
-                Export Project Source Code
-              </h3>
-            </div>
-            <span className="text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full bg-[#7c3aed]/10 text-[#7c3aed] border border-[#7c3aed]/20">
-              ZIP Package
-            </span>
-          </div>
-
-          <p className="text-xs text-[#6b6478] font-medium">
-            Download the complete production-ready source code bundle of the Nexa Creatives Smart NFC Dashboard, components, design system, and pages.
-          </p>
-
-          <div className="pt-2">
-            <a
-              id="settings-download-source-zip-btn"
-              href="/nexa-dashboard-source.zip"
-              download="nexa-dashboard-source.zip"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-xs sm:text-sm text-white bg-gradient-to-r from-[#7c3aed] to-[#22d3ee] hover:from-[#6d28d9] hover:to-[#06b6d4] shadow-[0_10px_24px_rgba(124,58,237,0.25)] transition-all cursor-pointer"
-            >
-              <Download className="w-4 h-4" />
-              <span>Download nexa-dashboard-source.zip (91 KB)</span>
-            </a>
           </div>
         </div>
       </div>
