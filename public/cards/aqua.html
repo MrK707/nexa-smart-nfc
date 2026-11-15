@@ -189,6 +189,7 @@
 
   footer{background:rgba(0,0,0,.5);padding:26px 0 46px;border-top:1px solid var(--line);color:var(--soft);font-size:12px;line-height:1.5}
   footer b{color:var(--mute);font-weight:600}
+  .plogo{height:15px;width:auto;vertical-align:middle;margin:0 6px;opacity:.9}
   .toast{position:fixed;z-index:70;left:50%;top:64px;transform:translate(-50%,-20px);background:rgba(102,252,241,.96);color:#0B0C10;padding:11px 20px;border-radius:980px;font-size:14px;opacity:0;transition:.35s;pointer-events:none}
   .toast.show{opacity:1;transform:translate(-50%,0)}
 
@@ -298,7 +299,7 @@
 </section>
 
 <footer>
-  <div class="in-wrap">Powered by <b>Nexa Creatives</b> &nbsp;|&nbsp; nexacreatives.site</div>
+  <div class="in-wrap">Powered by <img class="plogo" src="/images/logo-nexa.png" alt="Nexa Creatives"> &nbsp;|&nbsp; nexacreatives.site</div>
 </footer>
 
 <div class="toast" id="toast"></div>
@@ -413,6 +414,9 @@
     return true;
   }
   function apply(d){
+    const canSave=d.allowSave!==false;
+    $("saveBtn").style.display=canSave?"":"none";
+    $("navSave").style.display=canSave?"":"none";
     const name=d.name||"Your Name";
     document.title=name+" | "+(d.company||"Digital Card");
     $("logo").textContent=d.company||"Nexa Smart ID";
