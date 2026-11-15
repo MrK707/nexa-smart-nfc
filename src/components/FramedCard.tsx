@@ -25,6 +25,7 @@ export function buildCardData(profile: UserProfile) {
   const email = clean(contact.email).replace(/[\s<>"]/g, '');
   const webHref = safeUrl(contact.website);
   const address = clean(contact.address);
+  const hidePhone = profile.card.hide_phone === true;
   const photo = /^https?:\/\//i.test(clean(personal.profile_photo)) ? clean(personal.profile_photo) : '';
 
   return {
@@ -34,8 +35,9 @@ export function buildCardData(profile: UserProfile) {
     bio: clean(business.bio),
     photo,
     services: (business.services || []).map((s) => clean(s)).filter(Boolean).slice(0, 12),
-    phone,
-    phoneHref: phoneDigits ? `tel:${phoneDigits}` : '',
+    phone: hidePhone ? '' : phone,
+    phoneHref: !hidePhone && phoneDigits ? `tel:${phoneDigits}` : '',
+    allowSave: profile.card.allow_vcard !== false,
     chatHref: whatsappDigits ? `https://wa.me/${whatsappDigits}` : '',
     email,
     emailHref: email ? `mailto:${email}` : '',
