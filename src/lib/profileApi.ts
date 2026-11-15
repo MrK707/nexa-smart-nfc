@@ -49,6 +49,8 @@ function rowToProfile(row: any, authEmail: string): UserProfile {
       card_status: 'active',
       public_profile_url: publicUrl(username),
       card_color_theme: row.theme_id ?? 'aurora-glass',
+      allow_vcard: row.allow_vcard ?? true,
+      hide_phone: row.hide_phone ?? false,
     },
   };
 }
@@ -65,6 +67,8 @@ function profileToRow(profile: UserProfile) {
     contact: profile.contact,
     social: profile.social,
     theme_id: profile.card.card_color_theme ?? 'aurora-glass',
+    allow_vcard: profile.card.allow_vcard ?? true,
+    hide_phone: profile.card.hide_phone ?? false,
     updated_at: new Date().toISOString(),
   };
 }
@@ -115,11 +119,8 @@ export async function loadPublicProfile(
   username: string
 ): Promise<{ profile: UserProfile | null; error: string | null }> {
   if (!username) return { profile: null, error: null };
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('username,full_name,job_title,company,bio,profile_photo,services,contact,social,theme_id')
-    .eq('username', username)
-    .maybeSingle();
+  // The database function removes hidden details (like a hidden phone number) before sending
+  const { data, error } = await supabase.rpc('get_public_profile', { p_username: username });
 
   if (error) return { profile: null, error: error.message };
   if (!data) return { profile: null, error: null };
