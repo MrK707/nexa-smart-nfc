@@ -114,6 +114,7 @@
 
   footer{text-align:center;margin-top:30px;font-size:12px;color:#a49dc0;letter-spacing:.04em}
   footer b{color:var(--p600)}
+  .plogo{height:14px;width:auto;vertical-align:middle;margin-left:6px}
 
   /* ---------- edit ---------- */
   body.editing [data-edit]{outline:1.5px dashed var(--p500);outline-offset:4px;border-radius:6px;cursor:text}
@@ -209,7 +210,7 @@
       <a class="soc" id="sCh" href="#" aria-label="Chat"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 20.5l1.7-5.3A8.4 8.4 0 1 1 21 11.5z"/></svg></a>
     </div>
 
-    <footer>Powered by <b>NeXa Creatives</b></footer>
+    <footer>Powered by <img class="plogo" src="/images/logo-nexa-dark.png" alt="Nexa Creatives"></footer>
   </section>
 </main>
 <div class="toast" id="toast"></div>
@@ -275,6 +276,7 @@
     return !!value;
   }
   function apply(d){
+    $("saveBtn").style.display=d.allowSave!==false?"":"none";
     const name=d.name||"Your Name";
     document.title=name+(d.title?" | "+d.title:"")+(d.company?" | "+d.company:"");
     $("org").textContent=d.company||"Nexa Smart ID";
