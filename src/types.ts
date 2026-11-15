@@ -36,6 +36,8 @@ export interface UserCard {
   card_color_theme?: string;
   nfc_uid?: string;
   issued_at?: string;
+  allow_vcard?: boolean;
+  hide_phone?: boolean;
 }
 
 export interface UserProfile {
