@@ -7,7 +7,6 @@ import {
   Download,
   MapPin,
   ShieldCheck,
-  Radio,
   Instagram,
   Linkedin,
   Facebook,
@@ -47,6 +46,7 @@ const CSS = `
 .pp-tile-icon{padding:8px;border-radius:12px;background:var(--chip);color:var(--chipText);display:flex;}
 .pp-social{padding:10px;border-radius:12px;background:var(--tile);border:1px solid var(--border);color:var(--muted);display:flex;transition:transform .2s ease,color .2s ease;}
 .pp-social:hover{transform:translateY(-2px);color:var(--accent);}
+.pp-logo{display:inline-block;width:96px;height:24px;background:var(--logo) center/contain no-repeat;}
 `;
 
 interface PublicCardViewProps {
@@ -63,12 +63,14 @@ export const PublicCardView: React.FC<PublicCardViewProps> = ({
   preview = false,
 }) => {
   const { personal, business, contact, social } = profile;
+  const hidePhone = profile.card.hide_phone === true;
+  const allowSave = profile.card.allow_vcard !== false;
   const website = safeUrl(contact.website);
   const handle = (value: string) => encodeURI(value.trim().replace(/^@/, ''));
   const initial = (personal.full_name || '?').trim().charAt(0).toUpperCase();
 
   const actions: { key: string; href: string; label: string; icon: React.ReactNode; external?: boolean }[] = [];
-  if (contact.phone) actions.push({ key: 'call', href: `tel:${contact.phone}`, label: 'Call', icon: <Phone className="w-4 h-4" /> });
+  if (contact.phone && !hidePhone) actions.push({ key: 'call', href: `tel:${contact.phone}`, label: 'Call', icon: <Phone className="w-4 h-4" /> });
   if (contact.whatsapp)
     actions.push({
       key: 'chat',
@@ -124,13 +126,15 @@ export const PublicCardView: React.FC<PublicCardViewProps> = ({
           )}
         </div>
 
-        {/* Save contact */}
-        <div className="mt-6">
-          <button type="button" className="pp-btn" onClick={onSaveContact} disabled={!onSaveContact}>
-            <Download className="w-4 h-4" />
-            <span>Save Contact to Phone</span>
-          </button>
-        </div>
+        {/* Save contact (the owner can turn this off in Settings) */}
+        {allowSave && (
+          <div className="mt-6">
+            <button type="button" className="pp-btn" onClick={onSaveContact} disabled={!onSaveContact}>
+              <Download className="w-4 h-4" />
+              <span>Save Contact to Phone</span>
+            </button>
+          </div>
+        )}
 
         {/* Contact actions */}
         {actions.length > 0 && (
@@ -204,10 +208,9 @@ export const PublicCardView: React.FC<PublicCardViewProps> = ({
 
         {/* Footer */}
         <div className="pp-line mt-7 text-center pt-4">
-          <div className="pp-muted inline-flex items-center gap-1.5 text-[11px] font-medium">
-            <Radio className="w-3.5 h-3.5" style={{ color: 'var(--accent)' }} />
+          <div className="pp-muted inline-flex items-center gap-2 text-[11px] font-medium">
             <span>Powered by</span>
-            <span className="font-bold" style={{ color: 'var(--text)' }}>NEXA CREATIVES</span>
+            <span className="pp-logo" role="img" aria-label="Nexa Creatives" />
           </div>
         </div>
       </div>
