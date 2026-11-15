@@ -70,24 +70,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false }) => {
           className="flex items-center gap-3 cursor-pointer group"
           id="sidebar-brand-logo"
         >
-          <div className="relative w-10 h-10 rounded-xl bg-gradient-to-tr from-[#7c3aed] to-[#22d3ee] p-[2px] shadow-md shadow-[#7c3aed]/20 group-hover:scale-105 transition-transform duration-300">
-            <div className="w-full h-full bg-white rounded-[9px] flex items-center justify-center">
-              <span className="font-extrabold text-[#7c3aed] text-lg tracking-wider">
-                N
-              </span>
-            </div>
-            {/* Ambient signal dot */}
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-white animate-pulse"></span>
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-extrabold tracking-tight text-[#1f1b2e] text-base">NEXA</span>
-              <span className="text-[10px] font-bold tracking-widest text-white uppercase bg-gradient-to-r from-[#7c3aed] to-[#22d3ee] px-1.5 py-0.5 rounded-full shadow-xs">
-                NFC
-              </span>
-            </div>
-            <p className="text-[11px] text-[#6b6478] font-medium tracking-wide">CREATIVES PLATFORM</p>
-          </div>
+          <img src="/images/logo-nexa-dark.png" alt="Nexa Creatives" className="h-11 w-auto" />
         </div>
       </div>
 
